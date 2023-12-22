@@ -2,9 +2,9 @@
   "name": "ts-backend",
   "version": "1.0.0",
   "description": "",
-  "engines" : {
-    "npm" : ">=8.19.0",
-    "node" : ">=18.13.0"
+  "engines": {
+    "npm": ">=8.19.0",
+    "node": ">=18.13.0"
   },
   "main": "index.js",
   "scripts": {
@@ -26,9 +26,9 @@
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "express": "^4.18.2",
-    "express-jwt": "^6.0.0",
+    "express-jwt": "^8.4.1",
     "http-errors": "^2.0.0",
-    "jade": "^1.11.0",
+    "jade": "^1.9.2",
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^4.0.0",
     "mongoose": "^8.0.3",

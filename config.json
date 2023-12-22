@@ -1,4 +1,3 @@
 {
-  "connectionString": "MongoConnectionString",
-  "secret": "anavolimilovana"
+  "connectionString": "mongodb://admin:TAdmin2!@52.202.165.242:27017/"
 }

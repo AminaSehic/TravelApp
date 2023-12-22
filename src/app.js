@@ -14,8 +14,9 @@ const { attachUser } = require("./helpers/jwt");
 
 const app = express();
 const corsOptions = {
-  origin: "http://localhost:3000", // Replace with your React app's URL
+  origin: ["http://localhost:3000", "https://44.199.76.207:3000"], // Replace with your React app's URL
   credentials: true, // To allow cookies
+  optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));
 

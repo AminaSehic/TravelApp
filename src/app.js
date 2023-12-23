@@ -17,10 +17,7 @@ const {attachUser} = require("./helpers/jwt");
 
 
 
-const options = {
-    key: fs.readFileSync(path.join(__dirname,"..","..","/certs/private.pem")),
-    cert: fs.readFileSync(path.join(__dirname,"..","..","/certs/certificate.pem")),
-};
+
 const port = 5000;
 
 const app = express();
@@ -64,7 +61,7 @@ app.use(function (err, req, res, next) {
     res.render("error");
 });
 
-const server = https.createServer(options, app).listen(port, function(){
+const server = https.createServer(app).listen(port, function(){
     console.log("Express server listening on port " + port);
 });
 module.exports = server;

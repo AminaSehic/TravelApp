@@ -10,44 +10,18 @@ const Post = db.Post;
 const Like = db.Like;
 const Comment = db.Comment;
 
-async function getAll(user, filter, sort, query) {
-  let searchFilter = {};
-  if (query.search) {
-    const searchRegex = new RegExp(query.search, "i");
-    searchFilter = {
-      $or: [
-        { content: { $regex: searchRegex } },
-        { city: { $regex: searchRegex } },
-      ],
-    };
-  }
-
-  if (query.city) {
-    const searchRegex = new RegExp(query.city, "i");
-    searchFilter = {
-      $or: [{ city: { $regex: searchRegex } }],
-    };
-  }
-
-  const finalFilter = { ...filter, ...searchFilter };
-
+async function getAll(user, filter, sort) {
   if (!user) {
-    const posts = await Post.find(filter)
-        .populate("user", "firstName lastName email")
-        .sort(sort)
-        .limit(5);
-
-    return posts.filter(
-        (item) =>
-            item.city.toLowerCase().includes(query?.city?.toLowerCase() || "") &&
-            item.content.toLowerCase().includes(query?.search?.toLowerCase() || "")
-    );
+    return await Post.find(filter)
+      .populate("user", "firstName lastName email")
+      .sort(sort)
+      .limit(5);
   }
 
-  const posts = await Post.find(finalFilter)
-      .sort(sort)
-      .populate("user", "firstName lastName email")
-      .lean();
+  const posts = await Post.find(filter)
+    .sort(sort)
+    .populate("user", "firstName lastName email")
+    .lean();
 
   const likes = await Like.find({ user }).lean();
   // console.log("likes: ", likes, user);
@@ -61,39 +35,15 @@ async function getAll(user, filter, sort, query) {
   return postsWithLikeStatus;
 }
 
-async function getPendingPosts(query) {
-  let searchFilter = {};
-  if (query.search) {
-    const searchRegex = new RegExp(query.search, "i");
-    searchFilter = {
-      $or: [
-        { content: { $regex: searchRegex } },
-        { city: { $regex: searchRegex } },
-      ],
-    };
-  }
-
-  if (query.city) {
-    const searchRegex = new RegExp(query.city, "i");
-    searchFilter = {
-      $or: [{ city: { $regex: searchRegex } }],
-    };
-  }
-
-  const finalFilter = { pending: true, ...searchFilter };
-  return await Post.find(finalFilter).populate(
-      "user",
-      "firstName lastName email"
+async function getPendingPosts() {
+  return await Post.find({ pending: true }).populate(
+    "user",
+    "firstName lastName email"
   );
 }
 
 async function getById(id) {
-  const comments = await getPostComments(id);
-  const post = await Post.findById(id).lean();
-  return {
-    ...post,
-    comments,
-  };
+  return await Post.findById(id);
 }
 
 async function create(postParam) {
@@ -109,11 +59,9 @@ async function getPostComments(id) {
   if (!post) {
     throw "Post not found.";
   }
-  const comments = await Comment.find({ post: post._id })
-      .populate("user", "firstName lastName")
-      .sort({
-        createdAt: -1,
-      });
+  const comments = await Comment.find({ post: post._id }).sort({
+    createdAt: -1,
+  });
   return comments;
 }
 
@@ -152,7 +100,6 @@ async function update(id, postParam, isLike) {
     }
   }
   await post.save();
-  return post;
 }
 
 async function verify(id) {

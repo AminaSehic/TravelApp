@@ -15,24 +15,32 @@ async function authenticate({ email, password }) {
   //if user is truthy then sign the token
   if (user && bcrypt.compareSync(password, user.password)) {
     const token = jwt.sign(
-      {
-        sub: user.id,
-        role: user.role,
-        email: user.email,
-        name: `${user.firstName} ${user.lastName}`,
-      },
-      config.secret,
-      {
-        expiresIn: "7d",
-      }
+        {
+          sub: user.id,
+          role: user.role,
+          email: user.email,
+          name: `${user.firstName} ${user.lastName}`,
+        },
+        config.secret,
+        {
+          expiresIn: "1h",
+        }
     );
-
+    await user.save();
     return { ...user.toJSON(), token };
   }
 }
-
 async function getAll(user) {
+  let matchCriteria = { role: "User" };
+
+  if (user) {
+    matchCriteria._id = { $ne: user };
+  }
+
   let aggregationPipeline = [
+    {
+      $match: matchCriteria,
+    },
     {
       $lookup: {
         from: "posts",
@@ -97,8 +105,8 @@ async function update(id, userParam) {
   //validate the id and email
   if (!user) throw "User not found.";
   if (
-    user.email !== userParam.email &&
-    (await User.findOne({ email: userParam.email }))
+      user.email !== userParam.email &&
+      (await User.findOne({ email: userParam.email }))
   ) {
     throw `User with email ${userParam.email} already exist.`;
   }
@@ -116,10 +124,30 @@ async function _delete(id) {
   await User.findByIdAndDelete(id);
 }
 
-async function getUserPosts(id) {
-  const posts = await Post.find({ user: id })
-    .populate("user", "firstName lastName email")
-    .lean();
+async function getUserPosts(id, query) {
+  let searchFilter = {};
+  if (query.search) {
+    const searchRegex = new RegExp(query.search, "i");
+    searchFilter = {
+      $or: [
+        { content: { $regex: searchRegex } },
+        { city: { $regex: searchRegex } },
+      ],
+    };
+  }
+
+  if (query.city) {
+    const searchRegex = new RegExp(query.city, "i");
+    searchFilter = {
+      $or: [{ city: { $regex: searchRegex } }],
+    };
+  }
+
+  const finalFilter = { user: id, ...searchFilter };
+  const posts = await Post.find(finalFilter)
+      .populate("user", "firstName lastName email")
+      .sort({ createdAt: -1 })
+      .lean();
 
   const likes = await Like.find({ user: id }).lean();
   // console.log("likes: ", likes, user);

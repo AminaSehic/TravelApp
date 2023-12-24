@@ -2,10 +2,11 @@ const config = require("../../config.json");
 const mongoose = require("mongoose");
 const role = require("./role");
 const User = require("../models/User");
+const bcrypt = require("bcryptjs");
 
 async function createInitialAdmin() {
   try {
-    const adminExistsadminExists = await User.findOne({ role: role.Admin });
+    const adminExists = await User.findOne({ role: role.Admin });
     if (!adminExists) {
       const hashedPassword = bcrypt.hashSync("travelTalkAdmin", 10);
       const adminUser = new User({
@@ -26,11 +27,11 @@ async function createInitialAdmin() {
 
 try {
   mongoose
-    .connect(process.env.MONGODB_URI || config.connectionString)
-    .then((res) => {
-      console.log(`MongoDB connected Successfully..!`);
-      createInitialAdmin();
-    });
+      .connect(process.env.MONGODB_URI || config.connectionString)
+      .then((res) => {
+        console.log(`MongoDB connected Successfully..!`);
+        createInitialAdmin();
+      });
 } catch (error) {
   console.log(`MongoDB Error: `, error.message);
   process.exit(1);

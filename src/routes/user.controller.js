@@ -3,7 +3,6 @@ const router = express.Router();
 const userServices = require("../services/user.services");
 const Role = require("../helpers/role");
 const { jwt, jwtOptional } = require("../helpers/jwt");
-const { jwtDecode } = require("jwt-decode");
 
 //routes
 router.post("/authenticate", authenticate);
@@ -29,6 +28,7 @@ function authenticate(req, res, next) {
       if (user) {
         res.cookie("authToken", user.token, {
           httpOnly: true,
+          sameSite: "Strict",
           path: "/",
           maxAge: 3600000,
         });
@@ -45,6 +45,7 @@ function authenticate(req, res, next) {
 function logout(req, res, next) {
   res.clearCookie("authToken", {
     httpOnly: true,
+    sameSite: "Strict",
     path: "/",
   });
 
@@ -72,7 +73,7 @@ function getAll(req, res, next) {
 
 function getUserPosts(req, res, next) {
   userServices
-    .getUserPosts(req.user.sub)
+    .getUserPosts(req.user.sub, req.query)
     .then((posts) => res.json(posts))
     .catch((err) => next(err));
 }
@@ -97,6 +98,17 @@ function getById(req, res, next) {
       }
       return res.json(user);
     })
+    .catch((error) => next(error));
+}
+
+function updateToAdmin(req, res, next) {
+  userServices
+    .update(req.params.id, req.body)
+    .then(() =>
+      res.json({
+        message: `User with id: ${req.params.id} updated successfully.`,
+      })
+    )
     .catch((error) => next(error));
 }
 

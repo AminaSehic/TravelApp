@@ -19,6 +19,7 @@ async function create(commentParam) {
 
   const newComment = new Comment(commentParam);
   await newComment.save();
+  return post;
 }
 
 
